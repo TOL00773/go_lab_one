@@ -3,6 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"runtime/debug"
 )
 
@@ -23,5 +26,23 @@ func main() {
 
 func makeSzip() (err error)  {
 	fmt.Println("It's makeZip ")
+	return
+}
+
+func walkFiles(path string) (err error){
+	var files []os.FileInfo
+	if files, err = ioutil.ReadDir(path); err != nil {
+		return
+	}
+	for i := range files{
+		full := filepath.Join(path, files[i].Name())
+
+		if files[i].IsDir(){
+			if err = walkFiles(full); err != nil{
+				return
+			}
+		}
+		// Metadata packing
+	}
 	return
 }
