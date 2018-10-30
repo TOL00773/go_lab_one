@@ -1,8 +1,11 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -25,7 +28,10 @@ func main() {
 }
 
 func makeSzip() (err error)  {
-	fmt.Println("It's makeZip ")
+	if err = walkFiles("."); err != nil {
+		return
+	}
+
 	return
 }
 
@@ -44,5 +50,41 @@ func walkFiles(path string) (err error){
 		}
 		// Metadata packing
 	}
+	return
+}
+
+// FileMeta
+type FileMeta struct {
+	Name string `yaml:=filename`
+}
+func fileMeta(info os.FileInfo) (meta *FileMeta,err error) {
+	meta = &FileMeta{
+		Name: info.Name(),
+	}
+	return
+}
+
+func packFiles() (err error)  {
+	buf := new(bytes.Buffer)
+	zipwriter := zip.NewWriter(buf)
+
+	// --
+	var fileWriter io.Writer
+	var filename string
+	if fileWriter, err = zipwriter.Create(filename); err != nil{
+		return
+	}
+
+	var fileReader io.Reader
+	if _,err = io.Copy(fileWriter, fileReader); err != nil {
+		return
+	}
+	// --
+
+	if err = zipwriter.Close(); err != nil{
+		return
+	}
+
+	// zipData = buf.Bytes()
 	return
 }
